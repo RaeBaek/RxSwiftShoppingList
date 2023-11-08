@@ -15,8 +15,10 @@ class ShoppingViewModel {
     let buttonStatus = BehaviorSubject(value: false)
     
     var items = ShoppingList()
+    
     lazy var inputItems = BehaviorSubject(value: items.list)
     let outputItems = PublishSubject<[ShoppingModel]>()
+    
     let disposeBag = DisposeBag()
     
     init() {
@@ -36,6 +38,8 @@ class ShoppingViewModel {
         
     }
     
+    // currentValue: [1, 2, 3, 4] -> 5 추가
+    // [1, 2, 3, 4, 5]
     func createItem(item: ShoppingModel) {
         self.items.list.insert(item, at: 0)
         self.inputItems.onNext(self.items.list)

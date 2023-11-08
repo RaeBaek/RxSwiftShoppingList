@@ -20,9 +20,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let scene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: scene)
         
-        let rootViewController = UINavigationController(rootViewController: ShoppingViewController())
+        let firstViewController = UINavigationController(rootViewController: ShoppingViewController())
+        let secondViewController = UINavigationController(rootViewController: SearchViewController())
+        
+        let tabBarController = UITabBarController()
+        tabBarController.setViewControllers([firstViewController, secondViewController], animated: true)
+        
+        if let items = tabBarController.tabBar.items {
+            items[0].selectedImage = UIImage(systemName: "basket.fill")
+            items[0].image = UIImage(systemName: "basket")
+            items[0].title = "쇼핑"
+            
+            items[1].selectedImage = UIImage(systemName: "magnifyingglass.circle.fill")
+            items[1].image = UIImage(systemName: "magnifyingglass.circle")
+            items[1].title = "검색"
+        }
          
-        window?.rootViewController = rootViewController
+        window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
         
     }
