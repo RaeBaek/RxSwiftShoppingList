@@ -23,11 +23,7 @@ class SearchViewController: UIViewController {
         return view
     }()
     
-    var text: String = ""
-    
-    let word = PublishRelay<String>()
-    
-    let result = PublishRelay<[AppInfo]>()
+    let viewModel = SearchViewModel()
     
     let disposeBag = DisposeBag()
     
@@ -43,58 +39,12 @@ class SearchViewController: UIViewController {
     }
     
     func bind() {
-        word
-            .bind(to: searchController.searchBar.rx.text.orEmpty)
-            .disposed(by: disposeBag)
         
-        searchController.searchBar.rx.searchButtonClicked
-            .throttle(.seconds(1), scheduler: MainScheduler.instance)
-            .withLatestFrom(searchController.searchBar.rx.text.orEmpty, resultSelector: { _, text in
-                return text
-            })
-            .map { String($0) }
-            .flatMap { //value in
-                ItunesAPIManager.fetchData(query: $0)
-            }
-            .subscribe(with: self) { owner, app in
-                let data = app.results
-                owner.result.accept(data)
-            }
-            .disposed(by: disposeBag)
-//            .flatMap { ItunesAPIManager.fetchData(query: $0) }
-//            .subscribe(with: self) { owner, app in
-//                print(app)
-//                let data = app.results
-//                owner.result.accept(app)
-//            }
-//            .disposed(by: disposeBag)
-//            .flatMap { text in
-//                ItunesAPIManager.fetchData(query: text)
-//            }
-//            .subscribe(with: self) { owner, app in
-//                print(app)
-//                let data = app.results
-//                owner.result.accept(app)
-//            }
-//            .disposed(by: disposeBag)
+        let input = SearchViewModel.Input(searchButtonClicked: searchController.searchBar.rx.searchButtonClicked, searchText: searchController.searchBar.rx.text.orEmpty)
         
-//            .subscribe(with: self) { owner, value in
-//                print(value)
-//                owner.word.accept(value)
-//            }
-//            .disposed(by: disposeBag)
+        let output = viewModel.transform(input: input)
         
-//        let datas = ItunesAPIManager.fetchData(query: word)
-        
-//        print("===", datas)
-//        
-//        datas
-//            .subscribe(with: self) { owner, value in
-//                owner.result.accept(value.results)
-//            }
-//            .disposed(by: disposeBag)
-        
-        result
+        output.result
             .bind(to: searchTableView.rx.items(cellIdentifier: "SearchCell", cellType: SearchTableViewCell.self)) { (row, element, cell) in
                 
                 let iconImageUrl = URL(string: element.artworkUrl512)
