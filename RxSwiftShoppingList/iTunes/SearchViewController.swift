@@ -39,12 +39,17 @@ class SearchViewController: UIViewController {
     }
     
     func bind() {
-        
-        let input = SearchViewModel.Input(searchButtonClicked: searchController.searchBar.rx.searchButtonClicked, searchText: searchController.searchBar.rx.text.orEmpty)
+        let input = SearchViewModel.Input(
+            searchButtonClicked: searchController.searchBar.rx.searchButtonClicked,
+            cancelButtonClicked: searchController.searchBar.rx.cancelButtonClicked,
+            searchText: searchController.searchBar.searchTextField.rx.text.orEmpty,
+            cellSelected: searchTableView.rx.modelSelected(AppInfo.self)
+        )
         
         let output = viewModel.transform(input: input)
         
         output.result
+            .observe(on: MainScheduler.instance)
             .bind(to: searchTableView.rx.items(cellIdentifier: "SearchCell", cellType: SearchTableViewCell.self)) { (row, element, cell) in
                 
                 let iconImageUrl = URL(string: element.artworkUrl512)
@@ -68,6 +73,21 @@ class SearchViewController: UIViewController {
             }
             .disposed(by: disposeBag)
         
+        output.selectApp
+            .observe(on: MainScheduler.instance)
+            .withUnretained(self)
+            .bind { owner, app in
+                owner.pushViewControllerBySelectApp(selectApp: app)
+            }
+            .disposed(by: disposeBag)
+        
+    }
+    
+    func pushViewControllerBySelectApp(selectApp: AppInfo) {
+        let vc = SearchDetailViewController()
+        vc.selectApp = selectApp
+        
+        navigationController?.pushViewController(vc, animated: true)
     }
     
     func configureView() {

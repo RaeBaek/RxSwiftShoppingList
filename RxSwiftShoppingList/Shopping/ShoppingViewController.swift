@@ -115,7 +115,7 @@ class ShoppingViewController: UIViewController, SendData {
         
         shoppingTextField.rx.text.orEmpty
             .debounce(RxTimeInterval.seconds(1), scheduler: MainScheduler.instance)
-//            .distinctUntilChanged()
+            .distinctUntilChanged()
             .subscribe(with: self) { owner, value in
                 owner.viewModel.word.onNext(value)
                 

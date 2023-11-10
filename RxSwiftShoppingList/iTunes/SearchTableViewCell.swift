@@ -27,13 +27,20 @@ class SearchTableViewCell: UITableViewCell {
         view.setContentCompressionResistancePriority(.init(749), for: .horizontal)
         return view
     }()
-    
+
     let receiveButton = {
         let view = UIButton()
-        view.setTitle("받기", for: .normal)
-        view.setTitleColor(.systemBlue, for: .normal)
-        view.backgroundColor = .systemGray6
-        view.layer.cornerRadius = 15
+        
+        var buttonConfig = UIButton.Configuration.filled() //apple system button
+        buttonConfig.baseForegroundColor = .systemBlue
+        buttonConfig.baseBackgroundColor = .systemGray6
+        buttonConfig.cornerStyle = .capsule
+        
+        var titleAttr = AttributedString.init("받기")
+            titleAttr.font = .systemFont(ofSize: 15.0, weight: .bold)
+        buttonConfig.attributedTitle = titleAttr
+        
+        view.configuration = buttonConfig
         return view
     }()
     
@@ -180,7 +187,7 @@ class SearchTableViewCell: UITableViewCell {
             $0.top.equalTo(starImage.snp.bottom).offset(16)
             $0.horizontalEdges.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
-            $0.height.equalTo(contentView.snp.width).multipliedBy(0.66)
+            $0.height.equalTo(contentView.snp.width).multipliedBy(0.6)
         }
         
     }
