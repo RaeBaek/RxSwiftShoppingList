@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1408046B2AFF365A00520527 /* PreviewCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1408046A2AFF365A00520527 /* PreviewCollectionViewCell.swift */; };
+		1408046D2AFF420E00520527 /* Extension + UICollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1408046C2AFF420E00520527 /* Extension + UICollectionViewCell.swift */; };
+		1408046F2AFF422700520527 /* ReusableProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1408046E2AFF422700520527 /* ReusableProtocol.swift */; };
 		142CE1132AFE3AC0005B7A9C /* SearchDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142CE1122AFE3AC0005B7A9C /* SearchDetailViewController.swift */; };
 		142CE1152AFE3ACC005B7A9C /* SearchDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142CE1142AFE3ACC005B7A9C /* SearchDetailViewModel.swift */; };
 		147ADB0F2AFA6F5F00CD510D /* SearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147ADB0E2AFA6F5F00CD510D /* SearchViewController.swift */; };
@@ -32,6 +35,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1408046A2AFF365A00520527 /* PreviewCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCollectionViewCell.swift; sourceTree = "<group>"; };
+		1408046C2AFF420E00520527 /* Extension + UICollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Extension + UICollectionViewCell.swift"; sourceTree = "<group>"; };
+		1408046E2AFF422700520527 /* ReusableProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReusableProtocol.swift; sourceTree = "<group>"; };
 		142CE1122AFE3AC0005B7A9C /* SearchDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDetailViewController.swift; sourceTree = "<group>"; };
 		142CE1142AFE3ACC005B7A9C /* SearchDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchDetailViewModel.swift; sourceTree = "<group>"; };
 		147ADB0E2AFA6F5F00CD510D /* SearchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewController.swift; sourceTree = "<group>"; };
@@ -77,6 +83,9 @@
 				147ADB112AFA6F9600CD510D /* SearchViewModel.swift */,
 				142CE1122AFE3AC0005B7A9C /* SearchDetailViewController.swift */,
 				142CE1142AFE3ACC005B7A9C /* SearchDetailViewModel.swift */,
+				1408046A2AFF365A00520527 /* PreviewCollectionViewCell.swift */,
+				1408046C2AFF420E00520527 /* Extension + UICollectionViewCell.swift */,
+				1408046E2AFF422700520527 /* ReusableProtocol.swift */,
 			);
 			path = iTunes;
 			sourceTree = "<group>";
@@ -228,9 +237,12 @@
 				142CE1132AFE3AC0005B7A9C /* SearchDetailViewController.swift in Sources */,
 				147ADB122AFA6F9600CD510D /* SearchViewModel.swift in Sources */,
 				147ADB0F2AFA6F5F00CD510D /* SearchViewController.swift in Sources */,
+				1408046B2AFF365A00520527 /* PreviewCollectionViewCell.swift in Sources */,
+				1408046D2AFF420E00520527 /* Extension + UICollectionViewCell.swift in Sources */,
 				14936A9E2AFB6008004B8FD0 /* Network.swift in Sources */,
 				149DBF9F2AF7DDB800E59738 /* Model.swift in Sources */,
 				14D649972AF51ECA00798A28 /* ViewController.swift in Sources */,
+				1408046F2AFF422700520527 /* ReusableProtocol.swift in Sources */,
 				149DBF9D2AF7D6D000E59738 /* ShoppingTableViewCell.swift in Sources */,
 				14BEE69F2AF8F59D00A52D66 /* ShoppingDetailViewModel.swift in Sources */,
 				14BEE69A2AF8D65400A52D66 /* ShoppingDetailViewController.swift in Sources */,

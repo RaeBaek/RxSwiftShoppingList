@@ -93,35 +93,94 @@ class SearchDetailViewController: UIViewController {
         return view
     }()
     
-    var selectApp: AppInfo?
+    let previewLabel = {
+        let view = UILabel()
+        view.text = "미리보기"
+        view.textColor = .black
+        return view
+    }()
+    
+    lazy var previewCollectionView = {
+        let view = UICollectionView(frame: .zero, collectionViewLayout: setCollectionViewLayout())
+        view.register(PreviewCollectionViewCell.self, forCellWithReuseIdentifier: PreviewCollectionViewCell.identifier)
+        return view
+    }()
+    
+    // 단순 보여지는 화면인데 MVVM 패턴이 맞을지!!!!!!!!!!!!!!!
+    var appInfo: AppInfo?
+    
+    let viewModel = SearchDetailViewModel()
+    
+    let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        guard let appInfo else { return }
+        viewModel.appInfo = appInfo
         
         setNavigationBar()
         configureView()
         setConstraints()
         bind()
+        setNavigationBar()
         
     }
     
     func bind() {
-        guard let selectApp else { return }
+        viewModel.selectApp
+            .observe(on: MainScheduler.instance)
+            .withUnretained(self)
+            .bind { owner, value in
+                owner.appIconImage.kf.setImage(with: URL(string: value.artworkUrl512))
+                owner.appNameLabel.text = value.trackName
+                owner.developerLabel.text = value.sellerName
+                owner.versionLabel.text = "버전 \(value.version)"
+                owner.releaseNoteLabel.text = value.releaseNotes
+                owner.descriptionLabel.text = value.description
+                
+            }
+            .disposed(by: disposeBag)
         
-        appIconImage.kf.setImage(with: URL(string: selectApp.artworkUrl512))
-        appNameLabel.text = selectApp.trackName
-        developerLabel.text = selectApp.sellerName
-        versionLabel.text = "버전 \(selectApp.version)"
-        releaseNoteLabel.text = selectApp.releaseNotes
-        descriptionLabel.text = selectApp.description
+        viewModel.screenShots
+            .observe(on: MainScheduler.instance)
+            .bind(to: previewCollectionView.rx.items(cellIdentifier: PreviewCollectionViewCell.identifier, cellType: PreviewCollectionViewCell.self)) { (row, element, cell) in
+                let firstScreenShot = URL(string: element)
+                
+                cell.imageView.kf.setImage(with: firstScreenShot)
+            }
+            .disposed(by: disposeBag)
         
     }
     
     func setNavigationBar() {
-        guard let selectApp else { return }
-        title = selectApp.trackName
-        navigationController?.navigationBar.prefersLargeTitles = false
         
+        view.backgroundColor = .systemBackground
+        
+        viewModel.selectApp
+            .observe(on: MainScheduler.instance)
+            .withUnretained(self)
+            .bind { owner, value in
+                owner.title = value.trackName
+            }
+            .disposed(by: disposeBag)
+        
+        viewModel.largeTitleStatus
+            .withUnretained(self)
+            .bind { owner, value in
+                owner.navigationController?.navigationBar.prefersLargeTitles = value
+            }
+            .disposed(by: disposeBag)
+        
+    }
+    
+    func setCollectionViewLayout() -> UICollectionViewFlowLayout {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
+        layout.minimumInteritemSpacing = 10
+        
+        return layout
     }
     
     func configureView() {
