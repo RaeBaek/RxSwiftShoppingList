@@ -85,10 +85,8 @@ class SearchViewController: UIViewController {
     
     func pushViewControllerBySelectApp(selectApp: AppInfo) {
         let vc = SearchDetailViewController()
-        let vm = SearchDetailViewModel()
         
-        // 값 넘기는 부분을 vc와 vm 선택 여기!!!!!!!!!!!!!!!!!!!!!!!!
-        vm.appInfo = selectApp
+        vc.appInfo = selectApp
         
         navigationController?.pushViewController(vc, animated: true)
     }

@@ -8,10 +8,27 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import Kingfisher
 
 class SearchDetailViewController: UIViewController {
     
-    let appIconImage = {
+    private lazy var scrollView = {
+        let view = UIScrollView()
+        view.showsVerticalScrollIndicator = true
+        view.isScrollEnabled = true
+        view.bounces = true
+        view.delegate = self
+        view.backgroundColor = .systemBackground
+        return view
+    }()
+    
+    private let contentView = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        return view
+    }()
+    
+    private let appIconImage = {
         let view = UIImageView()
         view.contentMode = .scaleToFill
         view.layer.cornerRadius = 20
@@ -22,7 +39,7 @@ class SearchDetailViewController: UIViewController {
         return view
     }()
     
-    let appNameLabel = {
+    private let appNameLabel = {
         let view = UILabel()
         view.textColor = .black
         view.font = .systemFont(ofSize: 18, weight: .medium)
@@ -30,14 +47,14 @@ class SearchDetailViewController: UIViewController {
         return view
     }()
     
-    let developerLabel = {
+    private let developerLabel = {
         let view = UILabel()
         view.textColor = .darkGray
         view.font = .systemFont(ofSize: 13, weight: .regular)
         return view
     }()
     
-    let receiveButton = {
+    private let receiveButton = {
         let view = UIButton()
         
         var buttonConfig = UIButton.Configuration.filled() //apple system button
@@ -53,7 +70,7 @@ class SearchDetailViewController: UIViewController {
         return view
     }()
     
-    let shareButton = {
+    private let shareButton = {
         let view = UIButton()
         let imageConfig = UIImage.SymbolConfiguration(pointSize: 25)
         let image = UIImage(systemName: "square.and.arrow.up", withConfiguration: imageConfig)
@@ -63,29 +80,47 @@ class SearchDetailViewController: UIViewController {
         return view
     }()
     
-    let newTopic = {
+    private let newTopic = {
         let view = UILabel()
         view.text = "새로운 소식"
         view.textColor = .black
-        view.font = .systemFont(ofSize: 18, weight: .medium)
+        view.font = .systemFont(ofSize: 18, weight: .semibold)
         return view
     }()
     
-    let versionLabel = {
+    private let versionLabel = {
         let view = UILabel()
         view.textColor = .darkGray
         view.font = .systemFont(ofSize: 13, weight: .regular)
         return view
     }()
     
-    let releaseNoteLabel = {
+    private let releaseNoteLabel = {
         let view = UILabel()
         view.textColor = .black
         view.font = .systemFont(ofSize: 13, weight: .regular)
         return view
     }()
     
-    let descriptionLabel = {
+    private let previewLabel = {
+        let view = UILabel()
+        view.text = "미리보기"
+        view.textColor = .black
+        view.font = .systemFont(ofSize: 18, weight: .semibold)
+        return view
+    }()
+    
+    private lazy var previewCollectionView = {
+        let view = UICollectionView(frame: .zero, collectionViewLayout: setCollectionViewLayout())
+        view.register(PreviewCollectionViewCell.self, forCellWithReuseIdentifier: PreviewCollectionViewCell.identifier)
+        view.delegate = self
+//        view.dataSource = self
+        view.isScrollEnabled = true
+        view.showsHorizontalScrollIndicator = false
+        return view
+    }()
+    
+    private let descriptionLabel = {
         let view = UILabel()
         view.textColor = .black
         view.font = .systemFont(ofSize: 13, weight: .regular)
@@ -93,33 +128,15 @@ class SearchDetailViewController: UIViewController {
         return view
     }()
     
-    let previewLabel = {
-        let view = UILabel()
-        view.text = "미리보기"
-        view.textColor = .black
-        return view
-    }()
-    
-    lazy var previewCollectionView = {
-        let view = UICollectionView(frame: .zero, collectionViewLayout: setCollectionViewLayout())
-        view.register(PreviewCollectionViewCell.self, forCellWithReuseIdentifier: PreviewCollectionViewCell.identifier)
-        return view
-    }()
-    
-    // 단순 보여지는 화면인데 MVVM 패턴이 맞을지!!!!!!!!!!!!!!!
     var appInfo: AppInfo?
     
-    let viewModel = SearchDetailViewModel()
+    private let viewModel = SearchDetailViewModel()
     
-    let disposeBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        guard let appInfo else { return }
-        viewModel.appInfo = appInfo
-        
-        setNavigationBar()
         configureView()
         setConstraints()
         bind()
@@ -128,8 +145,13 @@ class SearchDetailViewController: UIViewController {
     }
     
     func bind() {
-        viewModel.selectApp
-            .observe(on: MainScheduler.instance)
+        guard let appInfo else { return }
+        
+        let input = SearchDetailViewModel.Input(appInfo: appInfo)
+        
+        let output = viewModel.transform(input: input)
+        
+        output.selectApp
             .withUnretained(self)
             .bind { owner, value in
                 owner.appIconImage.kf.setImage(with: URL(string: value.artworkUrl512))
@@ -138,70 +160,82 @@ class SearchDetailViewController: UIViewController {
                 owner.versionLabel.text = "버전 \(value.version)"
                 owner.releaseNoteLabel.text = value.releaseNotes
                 owner.descriptionLabel.text = value.description
+            }
+            .disposed(by: disposeBag)
+        
+        output.selectApp
+            .flatMap { value in
+                let data = BehaviorRelay(value: value.screenshotUrls)
+                return data
+            }
+            .map { $0 }
+            .bind(to: previewCollectionView.rx.items(cellIdentifier: PreviewCollectionViewCell.identifier, cellType: PreviewCollectionViewCell.self)) { (row, element, cell) in
+                
+                cell.imageView.kf.setImage(with: URL(string: element))
                 
             }
             .disposed(by: disposeBag)
         
-        viewModel.screenShots
-            .observe(on: MainScheduler.instance)
-            .bind(to: previewCollectionView.rx.items(cellIdentifier: PreviewCollectionViewCell.identifier, cellType: PreviewCollectionViewCell.self)) { (row, element, cell) in
-                let firstScreenShot = URL(string: element)
-                
-                cell.imageView.kf.setImage(with: firstScreenShot)
+        output.largeTitleStatus
+            .bind(with: self) { owner, bool in
+                owner.navigationController?.navigationBar.prefersLargeTitles = bool
             }
             .disposed(by: disposeBag)
         
     }
     
     func setNavigationBar() {
-        
         view.backgroundColor = .systemBackground
-        
-        viewModel.selectApp
-            .observe(on: MainScheduler.instance)
-            .withUnretained(self)
-            .bind { owner, value in
-                owner.title = value.trackName
-            }
-            .disposed(by: disposeBag)
-        
-        viewModel.largeTitleStatus
-            .withUnretained(self)
-            .bind { owner, value in
-                owner.navigationController?.navigationBar.prefersLargeTitles = value
-            }
-            .disposed(by: disposeBag)
         
     }
     
     func setCollectionViewLayout() -> UICollectionViewFlowLayout {
         let layout = UICollectionViewFlowLayout()
+        
+        let spacing: CGFloat = 16
+        
         layout.scrollDirection = .horizontal
-        layout.minimumLineSpacing = 0
-        layout.minimumInteritemSpacing = 10
+        
+        layout.minimumLineSpacing = spacing
+        layout.minimumInteritemSpacing = spacing
+        
+        layout.sectionInset = UIEdgeInsets(top: 0, left: spacing, bottom: 0, right: spacing)
         
         return layout
     }
     
     func configureView() {
         view.backgroundColor = .systemBackground
+        view.addSubview(scrollView)
         
-        [appIconImage, appNameLabel, developerLabel, receiveButton, shareButton, newTopic, versionLabel, releaseNoteLabel, descriptionLabel].forEach {
-            view.addSubview($0)
+        scrollView.addSubview(contentView)
+        
+        [appIconImage, appNameLabel, developerLabel, receiveButton, shareButton, newTopic, versionLabel, releaseNoteLabel, descriptionLabel, previewLabel, previewCollectionView].forEach {
+            contentView.addSubview($0)
         }
         
     }
     
     func setConstraints() {
+        
+        scrollView.snp.makeConstraints {
+            $0.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        contentView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+            $0.width.equalToSuperview()
+        }
+        
         appIconImage.snp.makeConstraints {
-            $0.top.leading.equalTo(view.safeAreaLayoutGuide).offset(16)
+            $0.top.leading.equalToSuperview().offset(16)
             $0.size.equalTo(110)
         }
         
         appNameLabel.snp.makeConstraints {
             $0.top.equalTo(appIconImage.snp.top)
             $0.leading.equalTo(appIconImage.snp.trailing).offset(16)
-            $0.trailing.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            $0.trailing.equalToSuperview().offset(-16)
         }
         
         developerLabel.snp.makeConstraints {
@@ -217,31 +251,53 @@ class SearchDetailViewController: UIViewController {
         }
         
         shareButton.snp.makeConstraints {
-            $0.trailing.equalTo(view.safeAreaLayoutGuide).offset(-16)
+            $0.trailing.equalToSuperview().offset(-16)
             $0.centerY.equalTo(receiveButton.snp.centerY)
             $0.size.equalTo(25)
         }
         
         newTopic.snp.makeConstraints {
             $0.top.equalTo(appIconImage.snp.bottom).offset(20)
-            $0.leading.equalTo(view.safeAreaLayoutGuide).offset(16)
+            $0.leading.equalToSuperview().offset(16)
         }
         
         versionLabel.snp.makeConstraints {
             $0.top.equalTo(newTopic.snp.bottom).offset(10)
-            $0.leading.equalTo(view.safeAreaLayoutGuide).offset(16)
+            $0.leading.equalToSuperview().offset(16)
         }
         
         releaseNoteLabel.snp.makeConstraints {
             $0.top.equalTo(versionLabel.snp.bottom).offset(20)
-            $0.leading.equalTo(view.safeAreaLayoutGuide).offset(16)
+            $0.leading.equalToSuperview().offset(16)
+        }
+        
+        previewLabel.snp.makeConstraints {
+            $0.top.equalTo(releaseNoteLabel.snp.bottom).offset(20)
+            $0.leading.equalToSuperview().offset(16)
+        }
+        
+        previewCollectionView.snp.makeConstraints {
+            $0.top.equalTo(previewLabel.snp.bottom).offset(10)
+            $0.horizontalEdges.equalToSuperview()
+            $0.height.equalTo(contentView.snp.width).multipliedBy(1.2)
         }
         
         descriptionLabel.snp.makeConstraints {
-            $0.top.equalTo(releaseNoteLabel.snp.bottom).offset(20)
-            $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
+            $0.top.equalTo(previewCollectionView.snp.bottom).offset(20)
+            $0.horizontalEdges.equalToSuperview().inset(16)
+            $0.bottom.equalToSuperview().offset(-16)
         }
         
     }
     
+}
+
+extension SearchDetailViewController: UIScrollViewDelegate, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        let width = view.frame.width * 0.6
+        
+        return CGSize(width: width, height: width * 2)
+        
+    }
 }

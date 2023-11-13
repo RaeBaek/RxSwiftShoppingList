@@ -11,16 +11,19 @@ class PreviewCollectionViewCell: UICollectionViewCell {
     
     let imageView = {
         let view = UIImageView()
-        view.contentMode = .scaleAspectFit
+        view.contentMode = .scaleToFill
         view.layer.cornerRadius = 20
         view.layer.cornerCurve = .continuous
         view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.systemGray4.cgColor
+        view.layer.borderColor = UIColor.systemGray6.cgColor
+        view.clipsToBounds = true
         return view
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        configureCell()
+        setConstraint()
         
     }
     
@@ -35,7 +38,8 @@ class PreviewCollectionViewCell: UICollectionViewCell {
     func setConstraint() {
         imageView.snp.makeConstraints {
             $0.verticalEdges.equalToSuperview()
-            $0.width.equalTo(imageView.snp.height).multipliedBy(0.5)
+            $0.width.equalToSuperview()
+            $0.height.equalToSuperview()
         }
     }
     
